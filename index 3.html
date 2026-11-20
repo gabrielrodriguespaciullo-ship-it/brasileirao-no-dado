@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brasileirão no Dado</title>
+<meta name="description" content="Simulador do Brasileirão das Séries A a E, Copa do Brasil e modo técnico. Tudo na sorte do dado.">
+<meta name="theme-color" content="#0d5c36">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230d5c36%22/%3E%3Crect%20x%3D%2212%22%20y%3D%2212%22%20width%3D%2240%22%20height%3D%2240%22%20rx%3D%229%22%20fill%3D%22%23f6c536%22/%3E%3Cg%20fill%3D%22%2314201a%22%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2222%22%20r%3D%224.2%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2222%22%20r%3D%224.2%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%224.2%22/%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2242%22%20r%3D%224.2%22/%3E%3Ccircle%20cx%3D%2242%22%20cy%3D%2242%22%20r%3D%224.2%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Brasileirão no Dado 🎲">
+<meta property="og:description" content="Séries A a E, Copa do Brasil e modo técnico. Tudo na sorte do dado.">
+<meta property="og:image" content="https://gabrielrodriguespaciullo-ship-it.github.io/brasileirao-no-dado/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#f3f5f1; --card:#ffffff; --ink:#14201a; --muted:#66756c; --line:#e3e8e2;
+  --green:#0d5c36; --green-2:#127a48; --yellow:#f6c536; --red:#d6453d; --blue:#2f6fd6;
+  --up:#e5f4ea; --down:#fbe9e7; --gold:#fff4cf;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer;border:0}
+.wrap{max-width:860px;margin:0 auto;padding:0 14px 40px}
+
+/* header */
+header{background:linear-gradient(160deg,var(--green) 0%,#08402a 100%);color:#fff;padding:18px 0 14px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 40px,transparent 40px 80px);pointer-events:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1}
+h1{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:30px;letter-spacing:.5px;margin:0;line-height:1;text-transform:uppercase}
+h1 span{color:var(--yellow)}
+.season{font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:600;opacity:.85;letter-spacing:.5px;text-transform:uppercase}
+.season b{font-size:22px;color:var(--yellow);margin-left:4px}
+.progress{height:6px;background:rgba(255,255,255,.15);border-radius:6px;margin-top:14px;overflow:hidden;position:relative;z-index:1}
+.progress i{display:block;height:100%;background:var(--yellow);border-radius:6px;transition:width .4s}
+
+/* controls */
+.controls{display:flex;gap:8px;margin:14px 0 10px;flex-wrap:wrap}
+.btn{padding:12px 16px;border-radius:12px;font-weight:700;background:var(--card);color:var(--ink);box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line) inset;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn.primary{background:var(--yellow);color:#2a2100;box-shadow:0 2px 0 #c99a12;flex:1;justify-content:center;font-size:15px}
+.btn.primary:active{transform:translateY(1px);box-shadow:0 1px 0 #c99a12}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;box-shadow:none;color:var(--muted);font-weight:600;padding:12px 8px}
+
+/* nav */
+.roundnav{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--radius);padding:6px;box-shadow:0 0 0 1px var(--line) inset;margin-bottom:10px}
+.roundnav button{width:44px;height:40px;border-radius:10px;background:var(--bg);font-size:18px;font-weight:700;color:var(--green)}
+.roundnav button:disabled{opacity:.3}
+.roundnav .lbl{text-align:center}
+.roundnav .lbl b{font-family:"Barlow Condensed",sans-serif;font-size:22px;display:block;line-height:1.1}
+.roundnav .lbl small{color:var(--muted);font-size:12px}
+
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px}
+.tab{padding:10px 0;border-radius:11px;background:var(--card);box-shadow:0 0 0 1px var(--line) inset;font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:700;color:var(--muted)}
+.tab small{display:block;font-family:Inter;font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;opacity:.8}
+.tab.on{background:var(--green);color:#fff;box-shadow:none}
+
+.grid{display:grid;gap:12px}
+@media(min-width:760px){.grid.league{grid-template-columns:1fr 1.25fr;align-items:start}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.card h2{font-family:"Barlow Condensed",sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.card h2 small{font-family:Inter;font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}
+
+/* matches */
+.match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line)}
+.match:last-child{border-bottom:0}
+.match .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match .t.h{text-align:right}
+.match .t.win{font-weight:700}
+.match .t.lose{color:var(--muted)}
+.score{display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+.die{width:28px;height:28px;border-radius:7px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.die.w{background:var(--green-2)}
+.die.l{background:#b9c3bc}
+.die.d{background:#6f7d74}
+.die.pending{background:var(--bg);color:var(--muted);box-shadow:0 0 0 1px var(--line) inset}
+.score .x{color:var(--muted);font-size:12px;font-weight:700}
+.pen{grid-column:1/-1;text-align:center;font-size:11px;color:var(--muted);margin-top:-4px}
+.roll .die:not(.pending){animation:roll .55s cubic-bezier(.3,1.4,.5,1)}
+@keyframes roll{0%{transform:rotate(-200deg) scale(.4);opacity:0}100%{transform:none;opacity:1}}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;color:var(--muted);font-weight:600;text-align:center;padding:8px 4px;border-bottom:1px solid var(--line)}
+th.tl{text-align:left}
+td{padding:7px 4px;text-align:center;border-bottom:1px solid var(--line)}
+td.pos{width:30px;font-weight:700;color:var(--muted);position:relative}
+td.pos::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:4px;border-radius:0 3px 3px 0}
+tr.up td.pos::before{background:var(--green-2)}
+tr.down td.pos::before{background:var(--red)}
+tr.champ td.pos::before{background:var(--yellow)}
+td.team{text-align:left;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.pts{font-weight:800}
+tr:last-child td{border-bottom:0}
+.crest{display:inline-block;vertical-align:middle;flex:none}
+td.team .crest{margin-right:7px}
+.match .t.h .crest{margin-left:6px}
+.match .t:not(.h) .crest{margin-right:6px}
+.history td.team .crest{margin-right:5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media(max-width:420px){.hide-sm{display:none}}
+
+/* KO */
+.phase{margin-bottom:12px}
+.phase .champion{padding:16px;text-align:center;background:var(--gold)}
+.phase .champion b{font-family:"Barlow Condensed",sans-serif;font-size:26px;display:block}
+.empty{padding:18px 14px;color:var(--muted);text-align:center}
+.info{font-size:12px;color:var(--muted);margin:2px 2px 12px;line-height:1.5}
+
+/* summary */
+.summary{background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 2px var(--yellow) inset;padding:16px;margin-bottom:14px}
+.summary h3{font-family:"Barlow Condensed",sans-serif;font-size:22px;margin:0 0 10px;text-transform:uppercase}
+.champs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.champs div{background:var(--gold);border-radius:10px;padding:8px 10px}
+.champs small{display:block;font-size:11px;color:#7a6417;font-weight:600;text-transform:uppercase}
+.champs b{font-size:14px}
+.moves{display:grid;gap:8px;font-size:13px;line-height:1.45}
+.moves .m{padding:8px 10px;border-radius:10px;background:var(--bg)}
+.moves .m b{display:block;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.up-t{color:var(--green-2);font-weight:600}
+.down-t{color:var(--red);font-weight:600}
+
+.history{margin-top:16px}
+.history table td{font-size:12px}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(10,20,15,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:16px;padding:20px;max-width:340px;width:100%}
+.modal h4{margin:0 0 8px;font-size:17px}
+.modal p{margin:0 0 16px;color:var(--muted);line-height:1.5}
+.modal .row{display:flex;gap:8px;justify-content:flex-end}
+.btn.danger{background:var(--red);color:#fff;box-shadow:none}
+.bk{display:grid;gap:8px;margin-bottom:14px}
+.bk .btn{justify-content:center}
+.bk textarea{width:100%;min-height:70px;border-radius:10px;border:1px solid var(--line);padding:8px;font:12px/1.4 ui-monospace,monospace;resize:vertical}
+.bmsg{margin:0!important;font-size:12px;min-height:16px;color:var(--green-2)!important}
+.tm{cursor:pointer}
+td.tm:hover,.match .tm:hover{color:var(--green-2);text-decoration:underline;text-underline-offset:3px}
+.tm-modal .box{max-width:460px;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden}
+.tm-head{display:flex;gap:12px;align-items:center;padding:16px 18px;background:linear-gradient(160deg,var(--green),#08402a);color:#fff}
+.tm-head h4{font-family:"Barlow Condensed",sans-serif;font-size:26px;margin:0;line-height:1}
+.tm-head small{opacity:.8;font-size:12px}
+.tm-head .x{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px}
+.tm-total{display:grid;grid-template-columns:1.4fr repeat(4,1fr);gap:4px;padding:14px 14px 4px;text-align:center}
+.tm-total div{background:var(--bg);border-radius:10px;padding:8px 2px}
+.tm-total div:first-child{background:var(--gold)}
+.tm-total b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:24px;line-height:1}
+.tm-total small{font-size:10px;color:var(--muted);font-weight:600}
+.tm-note{margin:4px 18px 0!important;font-size:11px!important;color:var(--muted)}
+.tm-stats{display:flex;flex-wrap:wrap;gap:6px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:var(--bg);font-size:12px;font-weight:700}
+.tm-list{overflow:auto;padding:4px 0}
+.season-row{display:grid;grid-template-columns:44px 30px 1fr auto;align-items:center;gap:8px;padding:9px 18px;border-bottom:1px solid var(--line)}
+.season-row:last-child{border-bottom:0}
+.season-row .y{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:17px}
+.season-row .dv{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-family:"Barlow Condensed",sans-serif;font-weight:800;color:#fff;font-size:15px}
+.season-row .rs{font-size:13px}
+.season-row .rs small{display:block;color:var(--muted);font-size:11px}
+.season-row .ic{display:flex;gap:4px;align-items:center}
+.season-row.live{background:#fbfcf9}
+.dvA{background:#0d5c36}.dvB{background:#2f6fd6}.dvC{background:#b4632a}.dvD{background:#6b4bb8}.dvE{background:#59646b}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 16px;border-radius:12px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:20;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ===== v3 ===== */
+.tabs{grid-template-columns:repeat(7,1fr);gap:4px}
+.tab{font-size:17px;padding:9px 0}
+.tab small{font-size:8.5px;letter-spacing:0}
+.controls.sec{margin-top:-4px}
+.controls.sec .btn{padding:9px 12px;font-size:13px}
+.search{display:flex;gap:6px;margin-bottom:10px}
+.search input{flex:1;min-width:0;padding:11px 12px;border-radius:12px;border:0;box-shadow:0 0 0 1px var(--line) inset;font:inherit;background:var(--card)}
+.search input:focus{outline:2px solid var(--green-2)}
+.bn{font-size:10px;font-weight:800;color:var(--green-2);margin:0 -1px;align-self:flex-start}
+.match.mine,tr.mine td{background:#fff8dd}
+.coach{background:var(--card);border-radius:var(--radius);box-shadow:0 0 0 1px var(--line) inset;padding:12px 14px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+.coach .cinfo{flex:1;min-width:0}
+.coach b{font-family:"Barlow Condensed",sans-serif;font-size:19px;display:block;line-height:1.1}
+.coach small{display:block;color:var(--muted);font-size:12px;line-height:1.4}
+.conf{height:7px;border-radius:6px;background:var(--bg);margin-top:6px;overflow:hidden}
+.conf i{display:block;height:100%;border-radius:6px}
+.coach .btn{padding:8px 10px;font-size:12px}
+.coach.empty{justify-content:space-between}
+.stars{color:#e0a800;letter-spacing:1px;font-size:13px}
+.stars span{color:rgba(255,255,255,.35)}
+.tm-actions{display:flex;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tm-actions .btn{padding:8px 12px;font-size:12px}
+.h2h{padding:12px 18px;border-top:1px solid var(--line)}
+.h2h h5{margin:0 0 8px;font-size:13px}
+.h2h select{width:100%;padding:9px;border-radius:10px;border:1px solid var(--line);font:inherit;margin-bottom:10px;background:#fff}
+.h2h-sum{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;text-align:center;margin-bottom:8px}
+.h2h-sum .n b{font-family:"Barlow Condensed",sans-serif;font-size:28px;display:block;line-height:1}
+.h2h-sum small{font-size:11px;color:var(--muted)}
+.h2h-list div{font-size:12px;padding:5px 0;border-top:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px}
+.h2h-list span{color:var(--muted)}
+.rec-grid{display:grid;gap:10px}
+@media(min-width:640px){.rec-grid{grid-template-columns:1fr 1fr}}
+.rec{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+.rec:last-child{border-bottom:0}
+.rec .lbl{flex:1;min-width:0}
+.rec .lbl small{display:block;color:var(--muted);font-size:11px}
+.rec .lbl b{font-size:14px}
+.rec .val{font-family:"Barlow Condensed",sans-serif;font-size:22px;font-weight:800;white-space:nowrap}
+.seg{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.seg button{padding:6px 12px;border-radius:999px;background:var(--bg);font-weight:700;font-size:12px}
+.seg button.on{background:var(--green);color:#fff}
+.offers{display:grid;gap:6px;margin-top:8px}
+.offers .btn{justify-content:flex-start}
+.coach-res{padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:13px;line-height:1.5}
+.coach-res.ok{background:var(--up)}.coach-res.bad{background:var(--down)}
+.note{background:var(--card);border-radius:12px;box-shadow:0 0 0 1px var(--line) inset;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.note summary{padding:10px 12px;cursor:pointer;list-style:none;line-height:1.4}
+.note summary::-webkit-details-marker{display:none}
+.note summary span{color:var(--green-2);font-weight:700;margin-left:4px;white-space:nowrap}
+.note[open] summary span{display:none}
+.note p{margin:0;padding:0 12px 10px;line-height:1.5}
+.dvCB{background:#b8860b}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap" style="padding-bottom:0">
+    <div class="top">
+      <h1>Brasileirão <span>no Dado</span></h1>
+      <div class="season">Temporada<b id="seasonYear">2026</b></div>
+    </div>
+    <div class="progress"><i id="prog"></i></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls sec" style="margin-top:14px">
+    <button class="btn" id="saveBtn">💾 Salvar</button>
+    <button class="btn ghost" id="backupBtn">Backup</button>
+    <button class="btn ghost" id="somBtn">🔇 Som</button>
+    <button class="btn ghost" id="resetBtn">Reiniciar</button>
+  </div>
+
+  <form class="search" id="searchForm" autocomplete="off">
+    <input id="busca" list="timesList" placeholder="🔎 Buscar time…" aria-label="Buscar time">
+    <datalist id="timesList"></datalist>
+    <button class="btn" type="submit">Abrir</button>
+  </form>
+
+  <div id="coach"></div>
+  <div id="summary"></div>
+
+  <div class="roundnav">
+    <button id="prevR" aria-label="Rodada anterior">‹</button>
+    <div class="lbl"><b id="rLabel">Rodada 1</b><small id="rSub"></small></div>
+    <button id="nextR" aria-label="Próxima rodada">›</button>
+  </div>
+  <div class="controls" style="margin-top:0">
+    <button class="btn primary" id="playBtn">🎲 Jogar rodada</button>
+    <button class="btn" id="simBtn">⏩ Até o fim</button>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="view"></div>
+
+  <div class="history card" id="history" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal tm-modal" id="tmModal"><div class="box" id="tmBox"></div></div>
+
+<div class="modal" id="bModal">
+  <div class="box">
+    <h4>Backup da carreira</h4>
+    <p>O jogo fica salvo neste navegador. Para levar a carreira para outro aparelho ou para o seu site, baixe o arquivo (ou copie o código) e carregue lá.</p>
+    <div class="bk">
+      <button class="btn" id="dlBtn">⬇️ Baixar arquivo de save</button>
+      <button class="btn" id="cpBtn">📋 Copiar código do save</button>
+      <label class="btn" for="fileIn">📂 Carregar arquivo de save</label>
+      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <textarea id="codeIn" placeholder="…ou cole aqui o código do save"></textarea>
+      <button class="btn" id="pasteBtn">Carregar código colado</button>
+      <p class="bmsg" id="bMsg"></p>
+    </div>
+    <div class="row"><button class="btn" id="bClose">Fechar</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h4>Reiniciar o jogo?</h4>
+    <p>Todas as temporadas, recordes e a carreira de técnico serão apagados e o jogo volta para 2026.</p>
+    <div class="row">
+      <button class="btn" id="mNo">Cancelar</button>
+      <button class="btn danger" id="mYes">Reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Dados 2026 ===== */
+const SERIE_A=["Athletico-PR","Atlético-MG","Bahia","Botafogo","Chapecoense","Corinthians","Coritiba","Cruzeiro","Flamengo","Fluminense","Grêmio","Internacional","Mirassol","Palmeiras","Red Bull Bragantino","Remo","Santos","São Paulo","Vasco","Vitória"];
+const SERIE_B=["América-MG","Athletic Club","Atlético-GO","Avaí","Botafogo-SP","Ceará","CRB","Criciúma","Cuiabá","Fortaleza","Goiás","Juventude","Londrina","Náutico","Novorizontino","Operário-PR","Ponte Preta","São Bernardo","Sport","Vila Nova"];
+const SERIE_C=["Amazonas FC","Anápolis","Barra-SC","Botafogo-PB","Brusque","Caxias","Confiança","Ferroviária","Figueirense","Floresta","Guarani","Inter de Limeira","Itabaiana","Ituano","Maranhão","Maringá","Paysandu","Santa Cruz","Volta Redonda","Ypiranga-RS"];
+const SERIE_D96=["Independência-AC","Galvez","Humaitá-AC","CSA","ASA","CSE","Trem","Oratório","Nacional-AM","Manaus","Manauara","Atlético de Alagoinhas","Jacuipense","Porto-BA","Juazeirense","Ferroviário","Tirol","Maracanã-CE","Iguatu","Atlético-CE","Gama","Capital-DF","Ceilândia","Brasiliense","Rio Branco-ES","Vitória-ES","Real Noroeste","CRAC","Abecat","Inhumas","Aparecidense","Goiatuba","Sampaio Corrêa-MA","Moto Club","Imperatriz","IAPE","Mixto","Primavera-MT","Luverdense","União Rondonópolis","Operário VG","Operário-MS","Pantanal","Tombense","Uberlândia","Betim","Democrata GV","Pouso Alegre","Tuna Luso","Águia de Marabá","Treze","Sousa","Serra Branca","Azuriz","São Joseense","Cianorte","FC Cascavel","Retrô","Central-PE","Maguary","Decisão","Altos","Parnahyba","Piauí","Fluminense-PI","Madureira","America-RJ","Nova Iguaçu","Portuguesa-RJ","Maricá","Sampaio Corrêa-RJ","ABC","América-RN","Laguna","Brasil de Pelotas","São José-RS","São Luiz","Guarany de Bagé","Porto Velho","Guaporé","GAS","Monte Roraima","São Raimundo-RR","Joinville","Marcílio Dias","Santa Catarina","Blumenau","Portuguesa","XV de Piracicaba","Noroeste","Velo Clube","Água Santa","Sergipe","Lagarto","Araguaína","Tocantinópolis"];
+const SERIE_E32=["São Caetano","Santo André","Juventus-SP","Paraná Clube","Bangu","São Raimundo-PA","Marília","América-SP","Comercial-SP","Rio Branco-SP","Paulista","Guaratinguetá","Mogi Mirim","XV de Jaú","Taubaté","Olaria","Campo Grande-RJ","Villa Nova-MG","Uberaba","Fluminense de Feira","Oeste","São Bento","Portuguesa Santista","Americano","Boavista","Ipatinga","Tupi","Caldense","Campinense","Rio Branco-AC","Pelotas","Icasa"];
+
+
+const ROUNDS=38;
+const KO_ROUNDS=[8,14,20,26,32,38];
+const PHASE_NAMES=["Fase de 64","Fase de 32","Oitavas de final","Quartas de final","Semifinal","Final"];
+const PHASE_ELIM=["na fase de 64","na fase de 32","nas oitavas","nas quartas","na semifinal","na final"];
+const COPA_ROUNDS=[3,9,15,21,27,33,37];
+const COPA_NAMES=["1ª fase (128)","2ª fase (64)","3ª fase (32)","Oitavas de final","Quartas de final","Semifinal","Final"];
+const COPA_ELIM=["na 1ª fase","na 2ª fase","na 3ª fase","nas oitavas","nas quartas","na semifinal","na final"];
+const DIVS=[
+  {k:"A",type:"league",sub:"pontos"},{k:"B",type:"league",sub:"pontos"},{k:"C",type:"league",sub:"pontos"},
+  {k:"D",type:"ko",sub:"mata"},{k:"E",type:"ko",sub:"mata"},{k:"CB",type:"copa",sub:"copa",label:"🏆"},{k:"R",type:"rec",sub:"recordes",label:"📊"}
+];
+const COMP_NOME={A:"Série A",B:"Série B",C:"Série C",D:"Série D",E:"Série E",CB:"Copa do Brasil"};
+const KEY="brasileirao-dado-v2";
+
+/* ===== Força ===== */
+const BIG=new Set(["Flamengo","Palmeiras","Corinthians","São Paulo","Atlético-MG","Cruzeiro","Grêmio","Internacional","Botafogo","Fluminense","Santos","Vasco","Bahia","Athletico-PR"]);
+const FORTE_B=new Set(["Fortaleza","Ceará","Sport","Goiás","América-MG","Atlético-GO","Cuiabá","Juventude","Criciúma","Avaí"]);
+const FORTE_C=new Set(["Paysandu","Guarani","Santa Cruz","Figueirense","Ferroviária","Caxias"]);
+const TRAD_E=new Set(["São Caetano","Santo André","Paraná Clube","Bangu","Juventus-SP","Portuguesa Santista","Americano","Campinense"]);
+const FMIN={A:3,B:2,C:1,D:1,E:1},FMAX={A:5,B:4,C:3,D:3,E:2};
+function forcaInicial(n,k){
+  if(k==="A")return BIG.has(n)?5:4;
+  if(k==="B")return FORTE_B.has(n)?4:3;
+  if(k==="C")return FORTE_C.has(n)?3:2;
+  if(k==="D")return 2;
+  return TRAD_E.has(n)?2:1;
+}
+function F(n){return (state.forca&&state.forca[n])||1;}
+function estrelas(n){const f=F(n);return `<span class="stars">${"★".repeat(f)}<span>${"★".repeat(5-f)}</span></span>`;}
+
+/* ===== Escudinhos (desenho próprio: cores do clube + sigla) ===== */
+const W="#ffffff",K="#111111",R="#d1232a",G="#0a7a3d",BL="#1f4fa3",Y="#f5c400",GR="#7a1f32",SKY="#4aa3df",OR="#ee7b1d",NV="#0b2a5b";
+const CORES={
+"Athletico-PR":[R,K],"Atlético-MG":[K,W],"Bahia":[BL,R],"Botafogo":[K,W],"Chapecoense":[G,W],"Corinthians":[W,K],"Coritiba":[G,W],"Cruzeiro":[BL,W],"Flamengo":[R,K],"Fluminense":[GR,G],"Grêmio":["#0d80bf",K],"Internacional":[R,W],"Mirassol":[Y,G],"Palmeiras":[G,W],"Red Bull Bragantino":[W,R],"Remo":[NV,W],"Santos":[W,K],"São Paulo":[W,R],"Vasco":[K,W],"Vitória":[R,K],
+"América-MG":[G,K],"Athletic Club":[K,W],"Atlético-GO":[R,K],"Avaí":[BL,W],"Botafogo-SP":[R,W],"Ceará":[K,W],"CRB":[R,W],"Criciúma":[Y,K],"Cuiabá":[G,Y],"Fortaleza":[BL,R],"Goiás":[G,W],"Juventude":[G,W],"Londrina":[SKY,W],"Náutico":[R,W],"Novorizontino":[Y,K],"Operário-PR":[K,W],"Ponte Preta":[K,W],"São Bernardo":[Y,K],"Sport":[R,K],"Vila Nova":[R,W],
+"Amazonas FC":[Y,K],"Anápolis":[R,W],"Botafogo-PB":[K,W],"Brusque":[Y,G],"Caxias":[GR,W],"Confiança":[BL,W],"Ferroviária":[GR,W],"Figueirense":[K,W],"Floresta":[G,W],"Guarani":[G,W],"Inter de Limeira":[K,W],"Itabaiana":[BL,W],"Ituano":[R,K],"Maranhão":[BL,R],"Paysandu":[SKY,W],"Santa Cruz":[K,R],"Ypiranga-RS":[Y,G],
+"CSA":[BL,W],"ASA":[K,W],"ABC":[K,W],"América-RN":[R,W],"Treze":[K,W],"Sampaio Corrêa-MA":[Y,G],"Moto Club":[R,K],"Joinville":[R,K],"Brasil de Pelotas":[R,K],"Portuguesa":[R,G],"Portuguesa-RJ":[R,G],"Madureira":[Y,BL],"America-RJ":[R,W],"Nova Iguaçu":[OR,W],"Gama":[G,W],"Brasiliense":[Y,G],"Ferroviário":[R,K],"Uberlândia":[G,W],"Central-PE":[K,W],"Operário-MS":[K,W],"Mixto":[K,W],"Nacional-AM":[BL,W],"Sergipe":[R,W],"XV de Piracicaba":[K,W],"Noroeste":[R,W],
+"São Caetano":[BL,W],"Santo André":[BL,W],"Juventus-SP":[GR,W],"Paraná Clube":[BL,R],"Bangu":[R,W],"Marília":[BL,W],"América-SP":[R,W],"Comercial-SP":[K,W],"Rio Branco-SP":[K,W],"Paulista":[R,W],"Mogi Mirim":[R,W],"Taubaté":[BL,W],"Olaria":[BL,W],"Villa Nova-MG":[R,W],"Oeste":[R,K],"São Bento":[BL,W],"Portuguesa Santista":[R,G],"Americano":[K,W],"Tupi":[K,W],"Caldense":[G,W],"Campinense":[R,K],"Pelotas":[BL,Y],"Icasa":[G,W]
+};
+const SIGLAS={"Athletico-PR":"CAP","Atlético-MG":"CAM","Atlético-GO":"ACG","Atlético-CE":"ATC","Atlético de Alagoinhas":"ATA","Red Bull Bragantino":"RBB","São Paulo":"SAO","Flamengo":"FLA","Fluminense":"FLU","Fluminense-PI":"FLP","Fluminense de Feira":"FLF","Botafogo":"BOT","Botafogo-SP":"BOS","Botafogo-PB":"BPB","Corinthians":"COR","Coritiba":"CFC","Internacional":"INT","Inter de Limeira":"INL","América-MG":"AME","America-RJ":"AMR","América-RN":"AMN","América-SP":"AMS","Santa Catarina":"SCA","São Caetano":"SCT","Sampaio Corrêa-MA":"SAM","Sampaio Corrêa-RJ":"SCR","São Raimundo-RR":"SRR","São Raimundo-PA":"SRP","Portuguesa":"POR","Portuguesa-RJ":"PRJ","Portuguesa Santista":"PSA","Rio Branco-SP":"RBA","Rio Branco-ES":"RBE","Rio Branco-AC":"RBC","Operário-PR":"OPE","Operário-MS":"OMS","Operário VG":"OVG","Vitória":"VIT","Vitória-ES":"VES","Vila Nova":"VIL","Villa Nova-MG":"VNM","Juventus-SP":"JUV","Juventude":"JUD","Paraná Clube":"PAR","Paulista":"PAU","Palmeiras":"PAL","Paysandu":"PAY","Campo Grande-RJ":"CGR","Ceará":"CEA","Ceilândia":"CEI","Capital-DF":"CPT","Central-PE":"CEN","São José-RS":"SJO","São Joseense":"SJS","São Bento":"SBE","São Bernardo":"SBC","São Luiz":"SLU","Guarany de Bagé":"GBA","Guarani":"GUA","Guaratinguetá":"GTA","Independência-AC":"IND","Humaitá-AC":"HUM","Nacional-AM":"NAC","Brasil de Pelotas":"BRP","Brasiliense":"BSE","XV de Piracicaba":"XVP","XV de Jaú":"XVJ","Comercial-SP":"COM","Monte Roraima":"MRR","Real Noroeste":"RNO","Noroeste":"NOR","União Rondonópolis":"URO","Primavera-MT":"PRI","Porto-BA":"PBA","Porto Velho":"PVH","Águia de Marabá":"AGU","Água Santa":"ASA","ASA":"ASA","Marcílio Dias":"MAR","Maracanã-CE":"MCN","Maricá":"MRC","Maranhão":"MAC","Maringá":"MGA","Manaus":"MAN","Manauara":"MNR","Democrata GV":"DEM","Pouso Alegre":"PAF","Serra Branca":"SBR","Tuna Luso":"TUN","FC Cascavel":"FCC","Amazonas FC":"AMA","Barra-SC":"BAR","Ypiranga-RS":"YPI","Volta Redonda":"VRE","Mogi Mirim":"MOG","Nova Iguaçu":"NIG","Campinense":"CPN","Santo André":"STA","Santa Cruz":"SCZ","Americano":"AMC","Goiatuba":"GTB","Ferroviário":"FRR","Guaporé":"GPR","Água Santa":"AGS","Treze":"TRZ","Uberaba":"UBA","Parnahyba":"PHB","Lagarto":"LGT","Marília":"MRL","Atlético":"ATL"};
+function strip(s){return s.normalize("NFD").replace(/[̀-ͯ]/g,"");}
+function sigla(n){
+  if(SIGLAS[n])return SIGLAS[n];
+  const base=strip(n.split("-")[0]).replace(/\b(de|do|da|dos|FC)\b/gi,"").trim().split(/\s+/);
+  if(base.length>1)return base.map(w=>w[0]).join("").slice(0,3).toUpperCase().padEnd(3,base[base.length-1][1]||"X").toUpperCase();
+  return base[0].slice(0,3).toUpperCase();
+}
+function hash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h;}
+function coresDe(n){
+  if(CORES[n])return CORES[n];
+  const hue=hash(n)%360;return [`hsl(${hue},55%,36%)`,W];
+}
+function claro(c){if(c.startsWith("hsl"))return false;const v=parseInt(c.slice(1),16);const r=v>>16,g=v>>8&255,b=v&255;return (r*299+g*587+b*114)/1000>165;}
+function crest(n,s=22){
+  const [p,q]=coresDe(n),fg=claro(p)?"#111":"#fff",borda=p===W||claro(p)?q:"rgba(0,0,0,.25)";
+  return `<svg class="crest" width="${s}" height="${Math.round(s*1.15)}" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 2 L37 7 V22 C37 33 29 40 20 44 C11 40 3 33 3 22 V7 Z" fill="${p}"/><path d="M3 28 H37 C35.5 35 29 40.5 20 44 C11 40.5 4.5 35 3 28Z" fill="${q}"/><path d="M20 2 L37 7 V22 C37 33 29 40 20 44 C11 40 3 33 3 22 V7 Z" fill="none" stroke="${borda}" stroke-width="2.5"/><text x="20" y="22" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="14" fill="${fg}">${sigla(n)}</text></svg>`;
+}
+
+/* ===== Utilidades ===== */
+const d6=()=>1+Math.floor(Math.random()*6);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function norm(s){return strip(String(s)).toLowerCase().trim();}
+
+function roundRobin(n){
+  const arr=[...Array(n).keys()],rounds=[];
+  for(let r=0;r<n-1;r++){
+    const m=[];
+    for(let i=0;i<n/2;i++){let h=arr[i],a=arr[n-1-i];if((r+i)%2)[h,a]=[a,h];m.push([h,a]);}
+    rounds.push(m);arr.splice(1,0,arr.pop());
+  }
+  return shuffle(rounds);
+}
+function makeLeague(teams){const L={teams:shuffle(teams),results:[]};const t=roundRobin(L.teams.length);L.fixtures=t.concat(t.map(r=>r.map(([h,a])=>[a,h])));return L;}
+function makeKO(teams,np){
+  const t=shuffle(teams),first=[];
+  for(let i=0;i<t.length;i+=2)first.push({h:t[i],a:t[i+1]});
+  return {teams:t.slice(),phases:[first],np};
+}
+function makeCopa(){
+  const e=shuffle(state.div.E.teams).slice(0,4);
+  return makeKO([...state.div.A.teams,...state.div.B.teams,...state.div.C.teams,...state.div.D.teams,...e],7);
+}
+
+/* ===== Estado ===== */
+let state,tab="A",view=1,justPlayed=0,rankDiv="A",som=false;
+try{som=localStorage.getItem("bd-som")==="1";}catch(e){}
+
+function newGame(){
+  const d=shuffle(SERIE_D96);
+  const toE=d.slice(64),D=d.slice(0,64);
+  state={season:2026,played:0,history:[],summary:null,teamHist:{},forca:{},records:{},h2h:{},streaks:{},coach:null,div:{},
+    note:"Sorteio inicial: 32 clubes da Série D foram para a Série E ("+toE.join(", ")+")."};
+  const lists={A:SERIE_A,B:SERIE_B,C:SERIE_C,D:D,E:SERIE_E32.concat(toE)};
+  for(const k in lists)lists[k].forEach(n=>state.forca[n]=forcaInicial(n,k));
+  setupSeason(lists);
+}
+function setupSeason(lists){
+  state.played=0;
+  for(const k of ["A","B","C"])state.div[k]=makeLeague(lists[k]);
+  for(const k of ["D","E"])state.div[k]=makeKO(lists[k],6);
+  state.copa=makeCopa();
+  if(state.coach&&state.coach.team){state.coach.meta=metaPara(state.coach.team,divAgora(state.coach.team));state.coach.fired=false;}
+}
+function save(){try{state.savedAt=Date.now();localStorage.setItem(KEY,JSON.stringify(state));return true;}catch(e){return false;}}
+function load(){try{const s=localStorage.getItem(KEY);if(s){state=JSON.parse(s);return true;}}catch(e){}return false;}
+function migrar(){
+  state.records=state.records||{};state.h2h=state.h2h||{};state.streaks=state.streaks||{};
+  if(state.coach===undefined)state.coach=null;
+  ["D","E"].forEach(k=>state.div[k].np=state.div[k].np||6);
+  if(!state.forca){state.forca={};for(const k of ["A","B","C","D","E"])state.div[k].teams.forEach(n=>state.forca[n]=forcaInicial(n,k));}
+  if(state.copa===undefined)state.copa=state.played===0?makeCopa():null;
+  migrarHist();
+}
+function migrarHist(){
+  const th=state.teamHist||(state.teamHist={});
+  for(const h of state.history||[]){
+    for(const k of ["A","B","C","D","E"]){
+      const n=h[k];if(!n)continue;
+      const l=th[n]||(th[n]=[]);
+      if(!l.some(x=>x.season===h.season))l.push({season:h.season,div:k,title:true,partial:true,res:"Campeão"});
+    }
+  }
+  Object.values(th).forEach(l=>l.sort((a,b)=>a.season-b.season));
+}
+
+/* ===== Simulação ===== */
+function bonus(h,a){return [0,0];}
+function playMatch(h,a){const dh=d6(),da=d6(),[bh,ba]=bonus(h,a);return {h,a,dh,da,bh,ba,gh:dh+bh,ga:da+ba};}
+function playKO(h,a){
+  const m=playMatch(h,a);
+  if(m.gh===m.ga){let ph,pa;do{ph=d6();pa=d6();}while(ph===pa);m.pen=[ph,pa];m.w=ph>pa?h:a;}
+  else m.w=m.gh>m.ga?h:a;
+  return m;
+}
+function recordMatch(m,comp){
+  const r=state.records,diff=Math.abs(m.gh-m.ga);
+  if(!r.big||diff>r.big.diff)r.big={diff,h:m.h,a:m.a,gh:m.gh,ga:m.ga,comp,season:state.season,round:state.played+1};
+  const key=[m.h,m.a].sort(),k=key.join("|");
+  const H=state.h2h[k]||(state.h2h[k]={j:0,w0:0,w1:0,e:0,l:[]});
+  const x=key[0]===m.h?m.gh:m.ga,y=key[0]===m.h?m.ga:m.gh;
+  H.j++;if(x>y)H.w0++;else if(y>x)H.w1++;else H.e++;
+  H.l.unshift([state.season,comp,x,y,m.pen?(m.w===key[0]?0:1):-1]);if(H.l.length>8)H.l.length=8;
+  if(["A","B","C"].includes(comp)){
+    for(const [n,won] of [[m.h,m.gh>m.ga],[m.a,m.ga>m.gh]]){
+      const s=state.streaks[n]=won?(state.streaks[n]||0)+1:0;
+      if(s>0&&(!r.streak||s>r.streak.len))r.streak={team:n,len:s,season:state.season,comp};
+    }
+  }
+  const c=state.coach;
+  if(c&&c.team&&(m.h===c.team||m.a===c.team)){
+    const meu=m.h===c.team?m.gh:m.ga,dele=m.h===c.team?m.ga:m.gh;
+    let d;
+    if(m.w)d=m.w===c.team?4:-6;else d=meu>dele?2:meu<dele?-2:0;
+    c.conf=Math.max(0,Math.min(100,c.conf+d));
+  }
+}
+function playPhase(K,p,comp){
+  K.phases[p]=K.phases[p].map(m=>{const r=playKO(m.h,m.a);recordMatch(r,comp);return r;});
+  if(p<K.np-1){const w=K.phases[p].map(m=>m.w),next=[];for(let i=0;i<w.length;i+=2)next.push({h:w[i],a:w[i+1]});K.phases[p+1]=next;}
+}
+function playRound(){
+  if(state.played>=ROUNDS)return;
+  const r=state.played;
+  for(const k of ["A","B","C"]){
+    const L=state.div[k];
+    L.results[r]=L.fixtures[r].map(([h,a])=>{const m=playMatch(L.teams[h],L.teams[a]);recordMatch(m,k);return m;});
+  }
+  const p=KO_ROUNDS.indexOf(r+1);
+  if(p>=0)for(const k of ["D","E"])playPhase(state.div[k],p,k);
+  const cp=COPA_ROUNDS.indexOf(r+1);
+  if(cp>=0&&state.copa)playPhase(state.copa,cp,"CB");
+  state.played++;
+  if(state.played===ROUNDS)endSeason();
+}
+
+function table(k,upto){
+  const L=state.div[k],t={};
+  L.teams.forEach(n=>t[n]={n,j:0,v:0,e:0,d:0,gp:0,gc:0,p:0});
+  for(let r=0;r<upto;r++){
+    const res=L.results[r];if(!res)continue;
+    for(const m of res){
+      const H=t[m.h],A=t[m.a];
+      H.j++;A.j++;H.gp+=m.gh;H.gc+=m.ga;A.gp+=m.ga;A.gc+=m.gh;
+      if(m.gh>m.ga){H.v++;H.p+=3;A.d++;}else if(m.gh<m.ga){A.v++;A.p+=3;H.d++;}else{H.e++;A.e++;H.p++;A.p++;}
+    }
+  }
+  return Object.values(t).sort((x,y)=>y.p-x.p||y.v-x.v||(y.gp-y.gc)-(x.gp-x.gc)||y.gp-x.gp||x.n.localeCompare(y.n,"pt"));
+}
+function koChampion(K){const f=K&&K.phases[K.np-1];return f&&f[0]&&f[0].w;}
+function koSemis(K){const s=K.phases[K.np-2];return s?s.flatMap(m=>[m.h,m.a]):[];}
+function koFirstLosers(K){return K.phases[0].filter(m=>m.w).map(m=>m.w===m.h?m.a:m.h);}
+function koReach(K,n){let last=-1;K.phases.forEach((ph,i)=>{if(ph&&ph.some(m=>m.h===n||m.a===n))last=i;});return last;}
+function koResult(K,n,elim=PHASE_ELIM,names=PHASE_NAMES){
+  if(koChampion(K)===n)return {txt:"Campeão",title:true,reach:K.np,wins:K.np};
+  const i=koReach(K,n);
+  if(i<0)return {txt:"Não participou",reach:-1,wins:0};
+  const m=K.phases[i].find(m=>m.h===n||m.a===n);
+  if(m&&m.w&&m.w!==n)return {txt:i===K.np-1?"Vice-campeão":"Eliminado "+elim[i],reach:i,wins:i};
+  return {txt:"Vivo — "+names[i],reach:i,wins:i,alive:true};
+}
+function divAgora(n){return ["A","B","C","D","E"].find(k=>state.div[k].teams.includes(n));}
+function divAtual(n){return state.summary?["A","B","C","D","E"].find(k=>state.summary.next[k].includes(n)):divAgora(n);}
+
+/* ===== Modo técnico ===== */
+function metaPara(n,k){
+  const f=F(n);
+  if(k==="A")return f>=5?{pos:6,txt:"Terminar no G6"}:f>=4?{pos:12,txt:"Terminar entre os 12 primeiros"}:{pos:16,txt:"Não cair"};
+  if(k==="B")return f>=4?{pos:4,txt:"Subir para a Série A"}:f>=3?{pos:12,txt:"Terminar entre os 12 primeiros"}:{pos:16,txt:"Não cair"};
+  if(k==="C")return f>=3?{pos:4,txt:"Subir para a Série B"}:{pos:16,txt:"Não cair"};
+  return f>=2?{reach:4,txt:`Subir para a Série ${k==="D"?"C":"D"} (chegar à semifinal)`}:{reach:2,txt:"Chegar às oitavas"};
+}
+function assumir(n){
+  const k=divAgora(n);
+  const career=state.coach?state.coach.career:[];
+  state.coach={team:n,conf:60,career,meta:metaPara(n,k),since:state.season};
+  save();$("tmModal").classList.remove("on");render();
+  toast(`🧑‍💼 Você é o novo técnico do ${n}!`);
+}
+function sairTecnico(){state.coach=null;save();$("tmModal").classList.remove("on");render();toast("Você deixou o modo técnico.");}
+function statusTime(n){
+  const k=divAgora(n);if(!k)return "";
+  if(["A","B","C"].includes(k)){
+    if(state.played===0)return `Série ${k} · temporada não começou`;
+    const tb=table(k,state.played),i=tb.findIndex(x=>x.n===n);
+    return `Série ${k} · ${i+1}º lugar · ${tb[i].p} pontos`;
+  }
+  return `Série ${k} · ${state.played<KO_ROUNDS[0]?"mata-mata não começou":koResult(state.div[k],n).txt}`;
+}
+
+/* ===== Fim de temporada ===== */
+function endSeason(){
+  const fA=table("A",ROUNDS),fB=table("B",ROUNDS),fC=table("C",ROUNDS);
+  const tA=fA.map(x=>x.n),tB=fB.map(x=>x.n),tC=fC.map(x=>x.n);
+  const D=state.div.D,E=state.div.E,CB=state.copa;
+  const aDown=tA.slice(-4),bUp=tB.slice(0,4),bDown=tB.slice(-4),cUp=tC.slice(0,4),cDown=tC.slice(-4);
+  const dUp=koSemis(D),eUp=koSemis(E);
+  const dDown=shuffle(koFirstLosers(D)).slice(0,4);
+  const without=(arr,rm)=>arr.filter(x=>!rm.includes(x));
+  const next={
+    A:without(tA,aDown).concat(bUp),
+    B:without(tB,bUp.concat(bDown)).concat(aDown,cUp),
+    C:without(tC,cUp.concat(cDown)).concat(bDown,dUp),
+    D:without(D.teams,dUp.concat(dDown)).concat(cDown,eUp),
+    E:without(E.teams,eUp).concat(dDown)
+  };
+  const th=state.teamHist||(state.teamHist={});
+  const copaInfo=n=>{if(!CB||!CB.teams.includes(n))return {};const r=koResult(CB,n,COPA_ELIM,COPA_NAMES);return {copa:r.txt,copaReach:r.reach,copaTitle:!!r.title};};
+  const add=(n,o)=>(th[n]=th[n]||[]).push({season:state.season,...o,...copaInfo(n),forca:F(n)});
+  const mv=(n,up,down)=>up.includes(n)?"up":down.includes(n)?"down":null;
+  const st=x=>({pts:x.p,v:x.v,e:x.e,d:x.d,sd:x.gp-x.gc});
+  fA.forEach((x,i)=>add(x.n,{div:"A",pos:i+1,...st(x),title:i===0,move:mv(x.n,[],aDown)}));
+  fB.forEach((x,i)=>add(x.n,{div:"B",pos:i+1,...st(x),title:i===0,move:mv(x.n,bUp,bDown)}));
+  fC.forEach((x,i)=>add(x.n,{div:"C",pos:i+1,...st(x),title:i===0,move:mv(x.n,cUp,cDown)}));
+  D.teams.forEach(n=>{const r=koResult(D,n);add(n,{div:"D",res:r.txt,kw:r.wins,title:!!r.title,move:mv(n,dUp,dDown)});});
+  E.teams.forEach(n=>{const r=koResult(E,n);add(n,{div:"E",res:r.txt,kw:r.wins,title:!!r.title,move:mv(n,eUp,[])});});
+  const champs={A:tA[0],B:tB[0],C:tC[0],D:koChampion(D),E:koChampion(E),CB:koChampion(CB)};
+
+  // técnico
+  let coachRes=null;const c=state.coach;
+  if(c&&c.team){
+    const k=divAgora(c.team),h=th[c.team][th[c.team].length-1];
+    const ok=c.meta.pos?h.pos<=c.meta.pos:koReach(state.div[k],c.team)>=c.meta.reach||h.title;
+    let d=ok?20:-25;if(h.title)d+=15;if(h.copaTitle)d+=15;if(h.move==="down")d-=20;
+    c.conf=Math.max(0,Math.min(100,c.conf+d));
+    const res=h.pos?`${h.pos}º lugar na Série ${k} (${h.pts} pts)`:`${h.res} na Série ${k}`;
+    c.career.push({season:state.season,team:c.team,div:k,res,meta:c.meta.txt,ok,title:!!h.title,copa:!!h.copaTitle,move:h.move});
+    coachRes={team:c.team,ok,res,meta:c.meta.txt,conf:c.conf,fired:c.conf<=0};
+    if(coachRes.fired){
+      c.fired=true;
+      const nd=divAtualNext(c.team,next);const below={A:"B",B:"C",C:"D",D:"E",E:"E"}[nd];
+      coachRes.offers=shuffle(next[below].filter(x=>x!==c.team)).slice(0,3);
+    }
+  }
+
+  // força para a próxima temporada
+  for(const k of ["A","B","C","D","E"]){
+    for(const n of next[k]){
+      let f=F(n);
+      const prev=th[n]&&th[n][th[n].length-1];
+      if(prev&&prev.move==="up")f++;if(prev&&prev.move==="down")f--;
+      if(prev&&prev.div==="A"&&prev.title)f++;
+      state.forca[n]=Math.max(FMIN[k],Math.min(FMAX[k],f));
+    }
+  }
+  state.summary={season:state.season,champs,moves:{aDown,bUp,bDown,cUp,cDown,dUp,dDown,eUp},next,coach:coachRes};
+  state.history.unshift({season:state.season,...champs});
+}
+function divAtualNext(n,next){return ["A","B","C","D","E"].find(k=>next[k].includes(n));}
+function nextSeason(){
+  const nx=state.summary.next;
+  if(state.coach&&state.coach.fired)state.coach=null;
+  state.season++;state.summary=null;state.note=null;
+  setupSeason(nx);
+  view=1;save();render();
+}
+function aceitarOferta(n){
+  const c=state.coach;c.team=n;c.conf=55;c.fired=false;c.since=state.season+1;
+  state.summary.coach.fired=false;state.summary.coach.hired=n;
+  save();render();toast(`🧑‍💼 Você assinou com o ${n}!`);
+}
+
+/* ===== Render ===== */
+const $=id=>document.getElementById(id);
+function dieCls(a,b){return a>b?"w":a<b?"l":"d";}
+function dado(raw,b,cls){return `<span class="die ${cls}" data-v="${raw}">${raw}</span>${b?`<span class="bn">+${b}</span>`:""}`;}
+function isMine(n){return state.coach&&state.coach.team===n;}
+function matchHTML(m,ko){
+  const mine=isMine(m.h)||isMine(m.a)?" mine":"";
+  if(m.gh==null){
+    const [bh,ba]=bonus(m.h,m.a);
+    return `<div class="match${mine}"><div class="t h tm" data-n="${esc(m.h)}">${esc(m.h)}${crest(m.h,18)}</div><div class="score"><span class="die pending">?</span>${bh?`<span class="bn">+${bh}</span>`:""}<span class="x">×</span><span class="die pending">?</span>${ba?`<span class="bn">+${ba}</span>`:""}</div><div class="t tm" data-n="${esc(m.a)}">${crest(m.a,18)}${esc(m.a)}</div></div>`;
+  }
+  let hw,aw;
+  if(ko){hw=m.w===m.h;aw=!hw;}else{hw=m.gh>m.ga;aw=m.ga>m.gh;}
+  const draw=!ko&&m.gh===m.ga;
+  const rh=m.dh!=null?m.dh:m.gh,ra=m.da!=null?m.da:m.ga;
+  return `<div class="match${mine}"><div class="t h tm ${hw?"win":draw?"":"lose"}" data-n="${esc(m.h)}">${esc(m.h)}${crest(m.h,18)}</div>
+  <div class="score">${dado(rh,m.bh,dieCls(m.gh,m.ga))}<span class="x">×</span>${dado(ra,m.ba,dieCls(m.ga,m.gh))}</div>
+  <div class="t tm ${aw?"win":draw?"":"lose"}" data-n="${esc(m.a)}">${crest(m.a,18)}${esc(m.a)}</div>
+  ${m.pen?`<div class="pen">Pênaltis no dado: ${m.pen[0]} × ${m.pen[1]} — passa ${esc(m.w)}</div>`:""}</div>`;
+}
+
+function renderLeague(k){
+  const L=state.div[k],r=view-1;
+  const res=r<state.played?L.results[r]:L.fixtures[r].map(([h,a])=>({h:L.teams[h],a:L.teams[a]}));
+  const upto=Math.min(view,state.played);
+  const t=table(k,upto),last=t.length;
+  const rows=t.map((x,i)=>{
+    let cls="";
+    if(k==="A"&&i===0)cls="champ";else if(k!=="A"&&i<4)cls=i===0?"champ":"up";
+    if(i>=last-4)cls="down";
+    if(isMine(x.n))cls+=" mine";
+    return `<tr class="${cls}"><td class="pos">${i+1}</td><td class="team tm" data-n="${esc(x.n)}">${crest(x.n)}${esc(x.n)}</td><td class="pts">${x.p}</td><td>${x.j}</td><td>${x.v}</td><td class="hide-sm">${x.e}</td><td class="hide-sm">${x.d}</td><td>${x.gp-x.gc>0?"+":""}${x.gp-x.gc}</td></tr>`;
+  }).join("");
+  const leg=k==="A"
+    ?`<span><i style="background:var(--yellow)"></i>Campeão</span><span><i style="background:var(--red)"></i>Rebaixados para a B</span>`
+    :`<span><i style="background:var(--yellow)"></i>Campeão</span><span><i style="background:var(--green-2)"></i>Acesso</span><span><i style="background:var(--red)"></i>Rebaixados</span>`;
+  const anim=justPlayed&&view===state.played?" roll":"";
+  return `<div class="grid league">
+    <div class="card${anim}"><h2>Jogos da rodada <small>${r<state.played?"encerrada":"a jogar"}</small></h2>${res.map(m=>matchHTML(m,false)).join("")}</div>
+    <div class="card"><h2>Classificação <small>após a rodada ${upto}</small></h2>
+      <table><thead><tr><th>#</th><th class="tl">Time</th><th>P</th><th>J</th><th>V</th><th class="hide-sm">E</th><th class="hide-sm">D</th><th title="Saldo do dado">SD</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="legend">${leg}<span>SD = saldo do dado</span></div>
+    </div></div>`;
+}
+
+function renderBracket(K,rounds,names,titulo,info,semiTag){
+  if(!K)return `<div class="card"><div class="empty">A Copa do Brasil começa na próxima temporada.</div></div>`;
+  const lim=Math.min(view,state.played);
+  let html="";
+  const champ=koChampion(K);
+  if(champ&&lim>=rounds[rounds.length-1])html+=`<div class="card phase"><div class="champion"><small>🏆 Campeão da ${titulo}</small><div style="margin:6px 0 2px">${crest(champ,40)}</div><b>${esc(champ)}</b></div></div>`;
+  const nextIdx=rounds.findIndex(x=>x>lim);
+  for(let p=rounds.length-1;p>=0;p--){
+    const ph=K.phases[p];if(!ph)continue;
+    const played=rounds[p]<=lim;
+    const isNext=p===nextIdx&&(p===0||rounds[p-1]<=lim);
+    if(!played&&!isNext)continue;
+    const list=played?ph:ph.map(m=>({h:m.h,a:m.a}));
+    const anim=justPlayed&&played&&rounds[p]===state.played&&view===state.played?" roll":"";
+    const tag=semiTag&&p===rounds.length-2?" · "+semiTag:"";
+    html+=`<div class="card phase${anim}"><h2>${names[p]} <small>Rodada ${rounds[p]}${played?"":" · a jogar"}${tag}</small></h2>${list.map(m=>matchHTML(m,true)).join("")}</div>`;
+  }
+  if(!html)html=`<div class="card"><div class="empty">Nenhuma fase até aqui.</div></div>`;
+  return `<p class="info">${info}</p>`+html;
+}
+function renderKO(k){
+  const info=k==="D"
+    ?"Mata-mata em jogo único. Empate vai para os pênaltis no dado. Os 4 semifinalistas sobem para a Série C, e 4 sorteados entre os eliminados na fase de 64 caem para a Série E."
+    :"Mata-mata em jogo único. Empate vai para os pênaltis no dado. Os 4 semifinalistas sobem para a Série D.";
+  return renderBracket(state.div[k],KO_ROUNDS,PHASE_NAMES,k==="D"?"Série D":"Série E",info,"os 4 sobem");
+}
+function renderCopa(){
+  return renderBracket(state.copa,COPA_ROUNDS,COPA_NAMES,"Copa do Brasil","128 clubes: todos das Séries A, B, C e D, mais 4 sorteados da Série E. Jogo único, só na sorte do dado, e empate decidido nos pênaltis no dado. Rodadas 3, 9, 15, 21, 27, 33 e 37.",null);
+}
+
+/* ===== Recordes e ranking ===== */
+function renderRec(){
+  const th=state.teamHist||{},H=state.history||[];
+  const entries=Object.entries(th).flatMap(([n,l])=>l.map(h=>({n,...h})));
+  // ranking por série
+  const agg={};
+  entries.filter(e=>e.div===rankDiv&&!e.partial).forEach(e=>{
+    const a=agg[e.n]||(agg[e.n]={n:e.n,pts:0,t:0,tit:0,kw:0,v:0});
+    a.t++;a.pts+=e.pts||0;a.kw+=e.kw||0;a.v+=e.v||0;if(e.title)a.tit++;
+  });
+  H.forEach(h=>{const n=h[rankDiv];if(n&&entries.some(e=>e.n===n&&e.season===h.season&&e.partial)){const a=agg[n]||(agg[n]={n,pts:0,t:0,tit:0,kw:0,v:0});a.tit++;}});
+  const league=["A","B","C"].includes(rankDiv);
+  const rk=Object.values(agg).sort(league?(x,y)=>y.pts-x.pts||y.tit-x.tit:(x,y)=>y.tit-x.tit||y.kw-x.kw).slice(0,20);
+  const rkRows=rk.map((x,i)=>`<tr${isMine(x.n)?' class="mine"':""}><td class="pos">${i+1}</td><td class="team tm" data-n="${esc(x.n)}">${crest(x.n)}${esc(x.n)}</td><td class="pts">${league?x.pts:x.kw}</td><td>${x.t}</td><td>${x.tit}</td></tr>`).join("");
+  const seg=["A","B","C","D","E"].map(k=>`<button data-rk="${k}" class="${k===rankDiv?"on":""}">Série ${k}</button>`).join("");
+  const ranking=`<div class="card"><h2>Ranking histórico <small>temporadas encerradas</small></h2><div class="seg">${seg}</div>
+    ${rk.length?`<table><thead><tr><th>#</th><th class="tl">Time</th><th>${league?"Pts":"Vit."}</th><th>Temp.</th><th>Títulos</th></tr></thead><tbody>${rkRows}</tbody></table>`:`<div class="empty">Termine uma temporada para ver o ranking.</div>`}
+    <div class="legend"><span>${league?"Soma de todos os pontos conquistados nesta série.":"Ordem por títulos e depois por vitórias no mata-mata."}</span></div></div>`;
+
+  // recordes
+  const recs=[];
+  const lider=(arr)=>{const c={};arr.forEach(n=>{if(n)c[n]=(c[n]||0)+1;});const m=Math.max(0,...Object.values(c));return m?{n:Object.keys(c).filter(k=>c[k]===m),v:m}:null;};
+  for(const k of ["A","B","C","D","E","CB"]){
+    const l=lider(H.map(h=>h[k]));
+    if(l)recs.push({ic:TROFEU[k]("26"),lbl:`Maior campeão — ${COMP_NOME[k]}`,b:l.n.slice(0,3).join(", ")+(l.n.length>3?` e mais ${l.n.length-3}`:""),val:`${l.v}×`,n:l.n[0]});
+  }
+  for(const k of ["A","B","C"]){
+    const best=entries.filter(e=>e.div===k&&e.pts!=null).sort((a,b)=>b.pts-a.pts)[0];
+    if(best)recs.push({ic:crest(best.n,26),lbl:`Mais pontos numa temporada — Série ${k}`,b:`${best.n} (${best.season})`,val:`${best.pts} pts`,n:best.n});
+  }
+  const ups=lider(entries.filter(e=>e.move==="up").map(e=>e.n));
+  if(ups)recs.push({ic:SETA.up,lbl:"Mais acessos",b:ups.n.slice(0,3).join(", ")+(ups.n.length>3?` e mais ${ups.n.length-3}`:""),val:`${ups.v}×`,n:ups.n[0]});
+  const dws=lider(entries.filter(e=>e.move==="down").map(e=>e.n));
+  if(dws)recs.push({ic:SETA.down,lbl:"Mais quedas",b:dws.n.slice(0,3).join(", ")+(dws.n.length>3?` e mais ${dws.n.length-3}`:""),val:`${dws.v}×`,n:dws.n[0]});
+  const bg=state.records.big;
+  if(bg)recs.push({ic:"🎲",lbl:`Maior goleada no dado — ${COMP_NOME[bg.comp]} ${bg.season}, rodada ${bg.round}`,b:`${bg.h} ${bg.gh} × ${bg.ga} ${bg.a}`,val:`+${bg.diff}`,n:bg.gh>bg.ga?bg.h:bg.a});
+  const sk=state.records.streak;
+  if(sk)recs.push({ic:"🔥",lbl:`Maior sequência de vitórias — ${COMP_NOME[sk.comp]} (${sk.season})`,b:sk.team,val:`${sk.len} jogos`,n:sk.team});
+  const recHTML=`<div class="card"><h2>Recordes</h2>${recs.length?recs.map(r=>`<div class="rec tm" data-n="${esc(r.n)}"><span>${r.ic}</span><div class="lbl"><small>${esc(r.lbl)}</small><b>${esc(r.b)}</b></div><span class="val">${r.val}</span></div>`).join(""):`<div class="empty">Jogue algumas rodadas para ver os recordes.</div>`}</div>`;
+  return `<div class="rec-grid">${recHTML}${ranking}</div>`;
+}
+
+function renderCoach(){
+  const el=$("coach"),c=state.coach;
+  if(!c||!c.team){
+    el.innerHTML=`<div class="coach empty"><div class="cinfo"><b>🧑‍💼 Modo técnico</b><small>Escolha um time para comandar: busque o nome acima e toque em “Assumir o comando”.</small></div></div>`;
+    return;
+  }
+  const cor=c.conf>=60?"var(--green-2)":c.conf>=30?"var(--yellow)":"var(--red)";
+  const humor=c.conf>=60?"Diretoria confiante":c.conf>=30?"Diretoria atenta":"Cargo ameaçado!";
+  el.innerHTML=`<div class="coach">${crest(c.team,38)}<div class="cinfo"><b class="tm" data-n="${esc(c.team)}">Técnico do ${esc(c.team)}</b>
+    <small>${esc(statusTime(c.team)||"")}</small><small>🎯 Meta: ${esc(c.meta?c.meta.txt:"—")}</small>
+    <div class="conf"><i style="width:${c.conf}%;background:${cor}"></i></div><small>${humor} · confiança ${c.conf}%</small></div>
+    <button class="btn" id="carreiraBtn">Carreira</button></div>`;
+  $("carreiraBtn").onclick=abrirCarreira;
+}
+function abrirCarreira(){
+  const c=state.coach;if(!c)return;
+  const rows=c.career.slice().reverse().map(x=>`<div class="season-row"><span class="y">${x.season}</span><span class="dv dv${x.div}">${x.div}</span><span class="rs"><b class="tm" data-n="${esc(x.team)}" style="font-weight:600">${esc(x.team)}</b> · ${esc(x.res)}<small>Meta: ${esc(x.meta)} — ${x.ok?"✅ cumprida":"❌ não cumprida"}</small></span><span class="ic">${x.title?TROFEU[x.div]("22"):""}${x.copa?TROFEU.CB("22"):""}${x.move?SETA[x.move]:""}</span></div>`).join("");
+  $("tmBox").innerHTML=`<div class="tm-head">${crest(c.team,44)}<div><h4>Sua carreira</h4><small>Técnico do ${esc(c.team)} · confiança ${c.conf}%</small></div><button class="x" id="tmClose" aria-label="Fechar">✕</button></div>
+  <div class="tm-list">${rows||`<div class="empty">Sua primeira temporada ainda está em andamento.</div>`}</div>
+  <div class="tm-actions"><button class="btn danger" id="sairBtn">Deixar o cargo</button></div>`;
+  $("tmModal").classList.add("on");
+  $("tmClose").onclick=()=>$("tmModal").classList.remove("on");
+  $("sairBtn").onclick=sairTecnico;
+}
+
+function renderSummary(){
+  const el=$("summary"),S=state.summary;
+  if(!S){if(state.note&&state.played===0){const m=state.note.match(/^(.*?)\s*\((.*)\)\.?$/);
+    el.innerHTML=m?`<details class="note"><summary>🎲 Sorteio inicial: 32 clubes da Série D foram para a Série E <span>ver lista</span></summary><p>${esc(m[2])}.</p></details>`:`<p class="info">${esc(state.note)}</p>`;}
+    else el.innerHTML="";return;}
+  const c=S.champs,m=S.moves,list=a=>a.map(esc).join(", ");
+  let coach="";
+  if(S.coach){
+    const C=S.coach;
+    if(C.fired&&!C.hired){
+      coach=`<div class="coach-res bad"><b>Você foi demitido do ${esc(C.team)}.</b><br>${esc(C.res)} — meta: ${esc(C.meta)}.<br>Propostas de outros clubes:
+      <div class="offers">${C.offers.map(n=>`<button class="btn offer" data-n="${esc(n)}">${crest(n,20)} ${esc(n)} ${estrelas(n)}</button>`).join("")}</div></div>`;
+    }else if(C.hired){
+      coach=`<div class="coach-res ok">Novo emprego: você vai comandar o <b>${esc(C.hired)}</b> em ${S.season+1}.</div>`;
+    }else{
+      coach=`<div class="coach-res ${C.ok?"ok":"bad"}"><b>${C.ok?"✅ Meta cumprida!":"❌ Meta não cumprida"}</b> — ${esc(C.team)}: ${esc(C.res)} (meta: ${esc(C.meta)}). Confiança da diretoria: ${C.conf}%.</div>`;
+    }
+  }
+  const blocked=S.coach&&S.coach.fired&&!S.coach.hired;
+  el.innerHTML=`<div class="summary"><h3>🏆 Fim da temporada ${S.season}</h3>${coach}
+  <div class="champs">${["A","B","C","D","E","CB"].filter(k=>c[k]).map(k=>`<div class="tm" data-n="${esc(c[k])}"><small>${TROFEU[k]("16")} ${COMP_NOME[k]}</small><b>${esc(c[k])}</b></div>`).join("")}</div>
+  <div class="moves">
+    <div class="m"><b>A ⇄ B</b><span class="up-t">Sobem:</span> ${list(m.bUp)}<br><span class="down-t">Descem:</span> ${list(m.aDown)}</div>
+    <div class="m"><b>B ⇄ C</b><span class="up-t">Sobem:</span> ${list(m.cUp)}<br><span class="down-t">Descem:</span> ${list(m.bDown)}</div>
+    <div class="m"><b>C ⇄ D</b><span class="up-t">Sobem:</span> ${list(m.dUp)}<br><span class="down-t">Descem:</span> ${list(m.cDown)}</div>
+    <div class="m"><b>D ⇄ E</b><span class="up-t">Sobem:</span> ${list(m.eUp)}<br><span class="down-t">Descem (sorteio):</span> ${list(m.dDown)}</div>
+  </div>
+  <div class="controls" style="margin-bottom:0"><button class="btn primary" id="nextSeasonBtn">${blocked?"Recusar propostas e ":""}Começar temporada ${S.season+1} →</button></div></div>`;
+  $("nextSeasonBtn").onclick=nextSeason;
+  el.querySelectorAll(".offer").forEach(b=>b.onclick=e=>{e.stopPropagation();aceitarOferta(b.dataset.n);});
+}
+
+function renderHistory(){
+  const h=state.history,el=$("history");
+  if(!h.length){el.style.display="none";return;}
+  el.style.display="";
+  const cell=(n,cls="")=>n?`<td class="team tm ${cls}" data-n="${esc(n)}">${esc(n)}</td>`:`<td class="${cls}">—</td>`;
+  el.innerHTML=`<h2>Galeria de campeões</h2><table><thead><tr><th>Ano</th><th class="tl">A</th><th class="tl">Copa</th><th class="tl hide-sm">B</th><th class="tl hide-sm">C</th><th class="tl hide-sm">D</th><th class="tl hide-sm">E</th></tr></thead><tbody>${
+    h.map(x=>`<tr><td><b>${x.season}</b></td><td class="team tm" data-n="${esc(x.A)}">${crest(x.A,16)}${esc(x.A)}</td>${cell(x.CB)}${cell(x.B,"hide-sm")}${cell(x.C,"hide-sm")}${cell(x.D,"hide-sm")}${cell(x.E,"hide-sm")}</tr>`).join("")}</tbody></table>`;
+}
+
+function render(){
+  $("seasonYear").textContent=state.season;
+  $("prog").style.width=(state.played/ROUNDS*100)+"%";
+  const done=state.played>=ROUNDS;
+  $("playBtn").disabled=done;$("simBtn").disabled=done;
+  $("playBtn").textContent=done?"Temporada encerrada":`🎲 Jogar rodada ${state.played+1}`;
+  $("somBtn").textContent=som?"🔊 Som":"🔇 Som";
+  $("rLabel").textContent=`Rodada ${view} de ${ROUNDS}`;
+  const ko=KO_ROUNDS.indexOf(view),cp=COPA_ROUNDS.indexOf(view);
+  const extra=[ko>=0?`${PHASE_NAMES[ko]} na D e E`:"",cp>=0?`Copa: ${COPA_NAMES[cp].replace(/ \(.*\)/,"")}`:""].filter(Boolean).join(" · ");
+  $("rSub").textContent=(view<=state.played?"Encerrada":view===state.played+1?"Próxima rodada":"Ainda não jogada")+(extra?" · "+extra:"");
+  $("prevR").disabled=view<=1;$("nextR").disabled=view>=ROUNDS;
+  $("tabs").innerHTML=DIVS.map(d=>`<button class="tab ${d.k===tab?"on":""}" data-k="${d.k}">${d.label||d.k}<small>${d.sub}</small></button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.k;justPlayed=0;render();});
+  const div=DIVS.find(d=>d.k===tab);
+  $("view").innerHTML=div.type==="league"?renderLeague(tab):div.type==="ko"?renderKO(tab):div.type==="copa"?renderCopa():renderRec();
+  document.querySelectorAll("[data-rk]").forEach(b=>b.onclick=()=>{rankDiv=b.dataset.rk;render();});
+  $("timesList").innerHTML=["A","B","C","D","E"].flatMap(k=>state.div[k].teams).sort((a,b)=>a.localeCompare(b,"pt")).map(n=>`<option value="${esc(n)}">`).join("");
+  renderCoach();renderSummary();renderHistory();
+  if(justPlayed)animarDados();
+  justPlayed=0;
+}
+
+/* ===== Dado animado + som ===== */
+let actx=null;
+function tick(f=900){
+  if(!som)return;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();o.type="square";o.frequency.value=f+Math.random()*300;
+    g.gain.setValueAtTime(.05,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.05);
+    o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.06);}catch(e){}
+}
+function animarDados(){
+  const els=[...document.querySelectorAll(".roll .die[data-v]")];if(!els.length)return;
+  let t=0;
+  const iv=setInterval(()=>{
+    t++;els.forEach(e=>e.textContent=d6());tick();
+    if(t>=9){clearInterval(iv);els.forEach(e=>e.textContent=e.dataset.v);tick(1500);}
+  },60);
+}
+
+const TROFEU={
+ A:s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Série A"><path d="M9 4h14v7a7 7 0 0 1-14 0z" fill="#f2c230" stroke="#a37b00" stroke-width="1.2"/><path d="M9 6H5a4 4 0 0 0 4 6M23 6h4a4 4 0 0 1-4 6" fill="none" stroke="#a37b00" stroke-width="1.8"/><rect x="14.5" y="17" width="3" height="5" fill="#d9a514"/><path d="M10 22h12l1 4H9z" fill="#f2c230" stroke="#a37b00" stroke-width="1.2"/><rect x="8" y="26" width="16" height="3" rx="1" fill="#7a5a00"/><path d="M16 7l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#fff6c9"/></svg>`,
+ B:s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Série B"><path d="M8 3h16l-2 9a6 6 0 0 1-12 0z" fill="#cfd6dd" stroke="#6f7c88" stroke-width="1.2"/><path d="M8 5H5c0 4 2 6 4.5 6.5M24 5h3c0 4-2 6-4.5 6.5" fill="none" stroke="#6f7c88" stroke-width="1.6"/><path d="M15 18h2l1 6h-4z" fill="#aeb8c2"/><rect x="10" y="24" width="12" height="5" rx="1.5" fill="#4d5862"/><rect x="12" y="25.5" width="8" height="2" rx="1" fill="#cfd6dd"/></svg>`,
+ C:s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Série C"><path d="M11 3h10v10a5 5 0 0 1-10 0z" fill="#d9944f" stroke="#8a4f16" stroke-width="1.2"/><circle cx="8" cy="8" r="3" fill="none" stroke="#8a4f16" stroke-width="1.6"/><circle cx="24" cy="8" r="3" fill="none" stroke="#8a4f16" stroke-width="1.6"/><rect x="14.5" y="18" width="3" height="6" fill="#b8722f"/><path d="M11 24h10v5H11z" fill="#5e3510"/></svg>`,
+ D:s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Série D"><circle cx="16" cy="11" r="8.5" fill="#8f73d9" stroke="#4a3196" stroke-width="1.4"/><circle cx="16" cy="11" r="5" fill="none" stroke="#e5dcff" stroke-width="1.4"/><text x="16" y="14" text-anchor="middle" font-size="8" font-weight="800" fill="#fff" font-family="Inter,sans-serif">D</text><path d="M14 19h4l1 5h-6z" fill="#6b4bb8"/><rect x="9" y="24" width="14" height="5" rx="1.5" fill="#3a2678"/></svg>`,
+ E:s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Série E"><path d="M11 4l-4 9 6-2zM21 4l4 9-6-2z" fill="#3fb8a8"/><path d="M10 4h12l-1.5 9a4.5 4.5 0 0 1-9 0z" fill="#8fdcd1" stroke="#1f7d71" stroke-width="1.2"/><path d="M16 6.5l1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2-1.6-1.5 2.2-.3z" fill="#fff"/><rect x="14.5" y="17.5" width="3" height="6" fill="#1f7d71"/><path d="M10 24h12l-1 5h-10z" fill="#155a51"/></svg>`
+};
+const SETA={
+ up:`<svg width="20" height="20" viewBox="0 0 20 20" aria-label="Subiu"><circle cx="10" cy="10" r="10" fill="#e5f4ea"/><path d="M10 4l5 6h-3v6H8v-6H5z" fill="#127a48"/></svg>`,
+ down:`<svg width="20" height="20" viewBox="0 0 20 20" aria-label="Caiu"><circle cx="10" cy="10" r="10" fill="#fbe9e7"/><path d="M10 16l-5-6h3V4h4v6h3z" fill="#d6453d"/></svg>`
+};
+
+TROFEU.CB=s=>`<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-label="Taça da Copa do Brasil"><path d="M10 3h12v6c0 4-2.7 7-6 7s-6-3-6-7z" fill="#e9b949" stroke="#8c6a12" stroke-width="1.2"/><path d="M10 5H6.5c0 4 2 6 4 6.5M22 5h3.5c0 4-2 6-4 6.5" fill="none" stroke="#8c6a12" stroke-width="1.6"/><path d="M12 6h8M12 9h8" stroke="#1e8a4c" stroke-width="1.6"/><path d="M15 16h2l1 5h-4z" fill="#c99a2e"/><path d="M9 21h14v3H9z" fill="#1e8a4c"/><rect x="8" y="24" width="16" height="5" rx="1.5" fill="#123d8a"/><circle cx="16" cy="26.5" r="1.4" fill="#e9b949"/></svg>`;
+
+/* ===== Ficha do time ===== */
+function abrirTime(n){
+  if(!n)return;
+  const hist=((state.teamHist||{})[n]||[]).slice().reverse();
+  const tit={};hist.forEach(h=>{if(h.title)tit[h.div]=(tit[h.div]||0)+1;if(h.copaTitle)tit.CB=(tit.CB||0)+1;});
+  const cur=divAtual(n);
+  let live="";
+  const curNow=divAgora(n);
+  if(!state.summary&&curNow){
+    const cur=curNow;let txt;
+    if(["A","B","C"].includes(cur)){
+      if(state.played===0)txt="Temporada ainda não começou";
+      else{const tb=table(cur,state.played),i=tb.findIndex(x=>x.n===n),x=tb[i];txt=`${i+1}º lugar · ${x.p} pontos após ${state.played} rodada${state.played>1?"s":""}`;}
+    }else txt=state.played<KO_ROUNDS[0]?"Mata-mata ainda não começou":koResult(state.div[cur],n).txt;
+    let copa="";
+    if(state.copa&&state.copa.teams.includes(n)&&state.played>=COPA_ROUNDS[0])copa=" · Copa: "+koResult(state.copa,n,COPA_ELIM,COPA_NAMES).txt.toLowerCase();
+    live=`<div class="season-row live"><span class="y">${state.season}</span><span class="dv dv${cur}">${cur}</span><span class="rs">${esc(txt)}<small>em andamento${esc(copa)}</small></span><span class="ic"></span></div>`;
+  }
+  const gravadas=new Set(Object.values(state.teamHist||{}).flat().filter(h=>!h.partial).map(h=>h.season));
+  const faltando=(state.history||[]).map(h=>h.season).filter(y=>!gravadas.has(y)&&!hist.some(h=>h.season===y));
+  hist.push(...faltando.map(y=>({season:y,missing:true})));hist.sort((a,b)=>b.season-a.season);
+  const rows=hist.map(h=>{
+    if(h.missing)return `<div class="season-row"><span class="y">${h.season}</span><span class="dv" style="background:#c3cbc5">?</span><span class="rs" style="color:var(--muted)">Sem registro<small>Temporada jogada antes do histórico existir</small></span><span class="ic"></span></div>`;
+    const txt=h.partial?"Campeão":h.pos?`${h.pos}º lugar · ${h.pts} pontos`:h.res;
+    const up=String.fromCharCode(h.div.charCodeAt(0)-1),dn=String.fromCharCode(h.div.charCodeAt(0)+1);
+    let sub=h.partial?`Campeão da Série ${h.div} (pontos não registrados)`:h.title?`Campeão da Série ${h.div}`:h.move==="up"?`Subiu para a Série ${up}`:h.move==="down"?`Caiu para a Série ${dn}`:`Série ${h.div}`;
+    if(h.copaTitle)sub+=" · Campeão da Copa do Brasil";else if(h.copaReach>=4)sub+=` · Copa: ${h.copa.toLowerCase()}`;
+    return `<div class="season-row"><span class="y">${h.season}</span><span class="dv dv${h.div}">${h.div}</span><span class="rs">${esc(txt)}<small>${esc(sub)}</small></span><span class="ic">${h.title?TROFEU[h.div]("24"):""}${h.copaTitle?TROFEU.CB("24"):""}${h.move?SETA[h.move]:""}</span></div>`;
+  }).join("");
+  const chips=["A","B","C","D","E","CB"].filter(k=>tit[k]).map(k=>`<span class="chip">${TROFEU[k]("18")} ${tit[k]}× ${COMP_NOME[k]}</span>`).join("");
+
+  // confronto direto
+  const rivais=Object.keys(state.h2h).filter(k=>k.split("|").includes(n)).map(k=>({o:k.split("|").find(x=>x!==n),j:state.h2h[k].j})).sort((a,b)=>b.j-a.j);
+  const h2h=rivais.length?`<div class="h2h"><h5>⚔️ Confronto direto</h5><select id="rivalSel">${rivais.map(r=>`<option value="${esc(r.o)}">${esc(r.o)} (${r.j} jogo${r.j>1?"s":""})</option>`).join("")}</select><div id="h2hBox"></div></div>`:"";
+
+  const souEu=isMine(n);
+  $("tmBox").innerHTML=`<div class="tm-head">${crest(n,44)}<div><h4>${esc(n)}</h4><small>${cur?`Disputa a Série ${cur} em ${state.summary?state.season+1:state.season}`:""} · Prestígio ${estrelas(n)}</small></div><button class="x" id="tmClose" aria-label="Fechar">✕</button></div>
+  <div class="tm-actions">${souEu?`<span class="chip">🧑‍💼 Você é o técnico</span>`:`<button class="btn" id="assumirBtn">🧑‍💼 Assumir o comando</button>`}</div>
+  ${chips?`<div class="tm-stats">${chips}</div>`:""}
+  <div class="tm-list">${live}${rows||(live?"":`<div class="empty">Sem temporadas encerradas ainda.</div>`)}${h2h}</div>`;
+  $("tmModal").classList.add("on");
+  $("tmClose").onclick=()=>$("tmModal").classList.remove("on");
+  if(!souEu)$("assumirBtn").onclick=()=>assumir(n);
+  if(rivais.length){const sel=$("rivalSel");const draw=()=>renderH2H(n,sel.value);sel.onchange=draw;draw();}
+}
+function renderH2H(n,o){
+  const key=[n,o].sort(),H=state.h2h[key.join("|")];if(!H)return;
+  const eu=key[0]===n;
+  const wn=eu?H.w0:H.w1,wo=eu?H.w1:H.w0;
+  const linhas=H.l.map(([s,c,x,y,p])=>{
+    const a=eu?x:y,b=eu?y:x;
+    const pen=p>=0?` (pên.: passou ${esc(key[p])})`:"";
+    return `<div><span>${s} · ${COMP_NOME[c]}</span><b>${esc(n)} ${a} × ${b} ${esc(o)}${pen}</b></div>`;
+  }).join("");
+  $("h2hBox").innerHTML=`<div class="h2h-sum"><div class="n">${crest(n,28)}<b>${wn}</b><small>vitórias</small></div><div class="n"><b>${H.e}</b><small>empates<br>${H.j} jogos</small></div><div class="n">${crest(o,28)}<b>${wo}</b><small>vitórias ${esc(o)}</small></div></div><div class="h2h-list">${linhas}</div>`;
+}
+
+/* ===== Backup / toast ===== */
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600);}
+function hora(ts){return new Date(ts).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});}
+function valid(o){return o&&typeof o.season==="number"&&o.div&&["A","B","C","D","E"].every(k=>o.div[k])&&typeof o.played==="number";}
+function loadFrom(o){if(!valid(o))throw new Error("save inválido");state=o;migrar();view=Math.max(1,state.played);tab="A";save();render();$("bModal").classList.remove("on");toast(`Carreira carregada: ${state.season}, rodada ${state.played}`);}
+
+/* ===== Eventos ===== */
+document.addEventListener("click",e=>{
+  const el=e.target.closest(".tm");
+  if(el&&!e.target.closest("button")&&!e.target.closest("select")){if(el.closest("#tmModal")&&!el.closest(".tm-list"))return;abrirTime(el.dataset.n);return;}
+  if(e.target.id==="tmModal")$("tmModal").classList.remove("on");
+});
+$("playBtn").onclick=()=>{playRound();view=state.played;justPlayed=1;save();render();};
+$("simBtn").onclick=()=>{while(state.played<ROUNDS)playRound();view=ROUNDS;save();render();window.scrollTo({top:0,behavior:"smooth"});};
+$("prevR").onclick=()=>{if(view>1){view--;render();}};
+$("nextR").onclick=()=>{if(view<ROUNDS){view++;render();}};
+$("resetBtn").onclick=()=>$("modal").classList.add("on");
+$("mNo").onclick=()=>$("modal").classList.remove("on");
+$("mYes").onclick=()=>{$("modal").classList.remove("on");newGame();view=1;tab="A";save();render();};
+$("somBtn").onclick=()=>{som=!som;try{localStorage.setItem("bd-som",som?"1":"0");}catch(e){}if(som)tick(1200);render();};
+$("searchForm").onsubmit=e=>{
+  e.preventDefault();
+  const q=norm($("busca").value);if(!q)return;
+  const all=["A","B","C","D","E"].flatMap(k=>state.div[k].teams);
+  const n=all.find(x=>norm(x)===q)||all.find(x=>norm(x).startsWith(q))||all.find(x=>norm(x).includes(q));
+  if(n){abrirTime(n);$("busca").value="";$("busca").blur();}else toast("Time não encontrado");
+};
+$("busca").addEventListener("change",()=>{const v=$("busca").value;const all=["A","B","C","D","E"].flatMap(k=>state.div[k].teams);if(all.includes(v)){abrirTime(v);$("busca").value="";$("busca").blur();}});
+$("saveBtn").onclick=()=>toast(save()?`💾 Carreira salva às ${hora(state.savedAt)}`:"Não foi possível salvar neste navegador. Use o Backup.");
+$("backupBtn").onclick=()=>{$("bMsg").textContent="";$("bModal").classList.add("on");};
+$("bClose").onclick=()=>$("bModal").classList.remove("on");
+$("dlBtn").onclick=()=>{
+  try{const blob=new Blob([JSON.stringify(state)],{type:"application/json"});const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);a.download=`brasileirao-no-dado-${state.season}-r${state.played}.json`;document.body.appendChild(a);a.click();a.remove();
+    $("bMsg").textContent="Arquivo gerado. Se o download não começar, use “Copiar código”.";}
+  catch(e){$("bMsg").textContent="O download não é permitido aqui. Use “Copiar código”.";}
+};
+$("cpBtn").onclick=async()=>{
+  const code=JSON.stringify(state);
+  try{await navigator.clipboard.writeText(code);$("bMsg").textContent="Código copiado! Guarde num bloco de notas.";}
+  catch(e){$("codeIn").value=code;$("codeIn").select();$("bMsg").textContent="Não deu para copiar sozinho: o código está na caixa abaixo, selecione e copie.";}
+};
+$("fileIn").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{loadFrom(JSON.parse(r.result));}catch(err){$("bMsg").textContent="Esse arquivo não é um save válido.";}};r.readAsText(f);e.target.value="";};
+$("pasteBtn").onclick=()=>{try{loadFrom(JSON.parse($("codeIn").value.trim()));}catch(err){$("bMsg").textContent="Código inválido. Confira se copiou ele inteiro.";}};
+
+const resumed=load();
+if(!resumed){newGame();save();}
+migrar();
+view=Math.max(1,state.played);
+render();
+if(resumed)toast(`Carreira retomada: temporada ${state.season}, rodada ${state.played}`);
+</script>
+</body>
+</html>
